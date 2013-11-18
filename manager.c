@@ -5,6 +5,11 @@
 #include <sys/wait.h>
 #include "err.h"
 
+void tworzPotomka()
+{
+	
+}
+
 int main(int argc, char* argv[])
 {
 	
@@ -17,8 +22,8 @@ int main(int argc, char* argv[])
 	
 	if (pipe (pipe_dsc) == -1) syserr("Error in pipe\n");
 	
-	
-	for(int licznik = 0; licznik < iloscWykonawcow; licznik++){
+	int licznik = 0;
+	for(licznik = 0; licznik < iloscWykonawcow; licznik++){
 		switch (fork ())
 		{
 			case -1: 
@@ -30,7 +35,7 @@ int main(int argc, char* argv[])
 				if (close (pipe_dsc [0]) == -1) syserr("child, close (pipe_dsc [0])");
 				if (close (pipe_dsc [1]) == -1) syserr("child, close (pipe_dsc [1])");
 				
-				execl("./executor", "executor", (char *) 0);
+				execl("executor", "./executor", (char *) 0);
 				syserr ("child, execvp");
 				
 			
@@ -40,8 +45,8 @@ int main(int argc, char* argv[])
 	}
 	
 	if (close (pipe_dsc [0]) == -1) syserr("parent, close (pipe_dsc [0])");
-	if (write (pipe_dsc [1], message, sizeof(message) - 1) == -1)
-		syserr("write");
+// 	if (write (pipe_dsc [1], message, sizeof(message) - 1) == -1)
+// 		syserr("write");
 
 	if (close (pipe_dsc [1]) == -1) syserr("parent, close (pipe_dsc [1])");
 

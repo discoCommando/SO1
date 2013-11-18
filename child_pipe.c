@@ -11,7 +11,7 @@ int main (int argc, char *argv[])
   while( a != '\n')
   {
     scanf("%c", &a);
-    printf("%c", a);
+    fprintf(stderr,"%c", a);
   }
   
 }
