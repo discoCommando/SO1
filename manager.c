@@ -44,7 +44,6 @@ int main(int argc, char* argv[])
 	if (pipe (pierwszyPipe) == -1) syserr("Error in pipe\n");
 	if (pipe (ostatniPipe) == -1) syserr("Error in pipe\n");
 	
-	if (close (ostatniPipe [1]) == -1) syserr("parent, close (pipe_dsc [0])");
  	
 	int licznik = 0;
 	int poprz[2];
@@ -73,7 +72,7 @@ int main(int argc, char* argv[])
 					if (close (pierwszyPipe[1]) == -1) syserr("child, close (deskryptorOdczytuPotomka)])");
 					
 				}
-//TODO DLA DWOCH
+//TDO DLA DWOCH
 				else if (licznik == iloscWykonawcow - 1)
 				{
 					if (close (1) == -1)            syserr("child, close (0)");
@@ -120,21 +119,20 @@ int main(int argc, char* argv[])
 
 	int j = 0;
 	
-	for ( j = 0; j < iloscWykonawcow - 1; j++){
+	for ( j = 0; j < iloscWykonawcow; j++){
 		if (wait (0) == -1) 
 			syserr("wait");}
 	
 	char wiadomosci[]= "aaaaaa";
 	 if (close (ostatniPipe [1]) == -1) syserr("parent, close (pipe_dsc [1])");
 	
-	if (read (ostatniPipe [0], wiadomosci, sizeof(wiadomosc) - 1) == -1)
+	if (read (ostatniPipe [0], wiadomosc, sizeof(wiadomosc) - 1) == -1)
 		syserr("read");
-	if (close (ostatniPipe [0]) == -1) syserr("parent, close (pipe_dsc [1])");
-
+	
 	int i = 0;
 	
-	for (i = 0; i < sizeof(wiadomosci) && wiadomosci[i] != '\n'; i++)
-	printf("%c", wiadomosci[i]);
+	for (i = 0; i < sizeof(wiadomosc) && wiadomosc[i] != '\n'; i++)
+	printf("%c", wiadomosc[i]);
      
 	
 	
