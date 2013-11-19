@@ -5,70 +5,109 @@
 #include <sys/wait.h>
 #include "err.h"
 
-unsigned int licznik = 0;
+char wiadomosc[] = "Hello from your parent!\n";
+
 unsigned int iloscWykonawcow = 0;
-void tworzPotomka(int deskryptorOdczytuPotomka)
+void tworzPotomka(int deskryptorOdczytuOdOjca, int licznik, int deskryptorZapisuManagera)//zwraca deskryptor do odczytu z ostatniego pipe
+
 {
+	int pipeNast[2];
+	/*
+	Jestem ojcem. Zamieniam standardowe wejscie obecnego potomka na 
+	deskryptorOdczytuOdOjca, na który ojciec wypisuje różne rzeczy
+	*/
+		
+	if (close (0) == -1)            syserr("child, close (0)");
+	if (dup (deskryptorOdczytuOdOjca) != 0)    syserr("child, dup (deskryptorOdczytuPotomka)");
+	if (close (deskryptorOdczytuOdOjca) == -1) syserr("child, close (deskryptorOdczytuPotomka)])");
+
 	if (licznik < iloscWykonawcow)
-	{
-		int pipe_nast[2];
-		if (close (0) == -1)            syserr("child, close (0)");
-		if (dup (deskryptorOdczytuPotomka) != 0)    syserr("child, dup (deskryptorOdczytuPotomka)");
-		if (close (deskryptorOdczytuPotomka) == -1) syserr("child, close (deskryptorOdczytuPotomka)])");
+	{	
 		
-		if (pipe (pipe_nast) == -1) syserr("Error in pipe\n");
-		
-		
-		if (close (1) == -1)            syserr("child, close (0)");
-		if (dup (pipe_nast[1]) != 0)    syserr("child, dup (pipe_nast[1])");
-		if (close (pipe_nast[1]) == -1) syserr("child, close (pipe_nast[1])])");
-	
-		++licznik;
-		tworzPotomka(pipe_nast[1]);
+		switch(fork())
+		{
+			case -1:
+				syserr("Error in fork, tworzpotomka\n");
+			case 0:
+				/*
+				Jestem dzieckiem. Podmieniam sobie standartowe wyjscie na moj deskryptor do odczytu.
+				Tworze pipe'a dla siebie i podmieniam swoje standardowe
+				wejscie na wyjscie ojca.
+				*/
+				if (licznik == iloscWykonawcow - 1)
+				{
+					if (close (2) == -1)            syserr("child, close (0)");
+					if (dup (deskryptorZapisuManagera) != 0)    syserr("child, du (pipe_nast[1])");
+					if (close (deskryptorZapisuManagera) == -1) syserr("child, close (pipe_nast[1])])");
+				}
+				else if (licznik < iloscWykonawcow - 1) {
+					if (pipe (pipeNast) == -1) syserr("Error in pipe\n");
+					if (close (2) == -1)            syserr("child, close (0)");
+					if (dup (pipeNast[1]) != 0)    syserr("child, dup (pipe_nast[1])");
+					if (close (pipeNast[1]) == -1) syserr("child, close (pipe_nast[1])])");
+					tworzPotomka(pipeNast[1], ++licznik, deskryptorZapisuManagera);
+				}
+				execl("executor", "./executor", (char *) 0);
+				syserr ("child, execvp");
+			
+			}
 	}
 }
 
 int main(int argc, char* argv[])
 {
-	
+	/*
 	if (argc != 4){
 		fatal("NJEE\n");
 	}
-	
-	int pipe_dsc [2];
+	*/
+	int pierwszyPipe [2];
 	iloscWykonawcow = atoi(argv[1]);
 	
-	if (pipe (pipe_dsc) == -1) syserr("Error in pipe\n");
+	int ostatniPipe [2];
 	
-	int licznik = 0;
-	for(licznik = 0; licznik < iloscWykonawcow; licznik++){
-		switch (fork ())
-		{
-			case -1: 
-				syserr("Error in fork\n");
+	if (pipe (pierwszyPipe) == -1) syserr("Error in pipe\n");
+	if (pipe (ostatniPipe) == -1) syserr("Error in pipe\n");
+	
+	if (close (ostatniPipe [1]) == -1) syserr("parent, close (pipe_dsc [0])");
+ 	
+	
+	
+	switch (fork ())
+	{
+		case -1: 
+			syserr("Error in fork\n");
 
-			case 0:
-				if (close (0) == -1)            syserr("child, close (0)");
-				if (dup (pipe_dsc [0]) != 0)    syserr("child, dup (pipe_dsc [0])");
-				if (close (pipe_dsc [0]) == -1) syserr("child, close (pipe_dsc [0])");
-				if (close (pipe_dsc [1]) == -1) syserr("child, close (pipe_dsc [1])");
-				
-				execl("executor", "./executor", (char *) 0);
-				syserr ("child, execvp");
-				
+		case 0:
+			tworzPotomka(pierwszyPipe[0], 1, ostatniPipe[1]);
+			execl("executor", "./executor", (char *) 0);
+			syserr ("child, execvp");
 			
-		}
+		
+	}
 		
 			
-	}
 	
-	if (close (pipe_dsc [0]) == -1) syserr("parent, close (pipe_dsc [0])");
-// 	if (write (pipe_dsc [1], message, sizeof(message) - 1) == -1)
-// 		syserr("write");
+	if (close (pierwszyPipe [0]) == -1) syserr("parent, close (pipe_dsc [0])");
+ 	
+	if (write (pierwszyPipe [1], wiadomosc, sizeof(wiadomosc) - 1) == -1)
+ 		syserr("write");
 
-	if (close (pipe_dsc [1]) == -1) syserr("parent, close (pipe_dsc [1])");
+	if (close (pierwszyPipe [1]) == -1) syserr("parent, close (pipe_dsc [1])");
 
-	if (wait (0) == -1) 
-		syserr("wait");
+	int j = 0;
+	for ( j = 0; j < iloscWykonawcow - 1; j++){
+		if (wait (0) == -1) 
+			syserr("wait");}
+	
+char wiadomosci[] = "aaaaaaaaaaaaaaaaaaaaaaa\n";
+	if (read (ostatniPipe [0], wiadomosci, sizeof(wiadomosci) - 1) == -1)
+		syserr("read");
+	int i = 0;
+	
+	for (i = 0; i < sizeof(wiadomosci) && wiadomosci[i] != '\n'; i++)
+	printf("%c", wiadomosci[i]);
+     
+	
 	exit (0);
 }
