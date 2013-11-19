@@ -9,15 +9,16 @@ char message[1024] = "hejka\n";
 
 int main (int argc, char *argv[])
 {
-  int pipe_dsc [2];
+  int ostatniPipe [2];
   
-  int pipe_dsc2 [2];
-  int pipe_dsc3 [2];
-  if (pipe (pipe_dsc) == -1) syserr("Error in pipe\n");
-if (pipe (pipe_dsc2) == -1) syserr("Error in pipe\n");
-if (pipe (pipe_dsc3) == -1) syserr("Error in pipe\n");
+  int pierwszyPipe [2];
+  
+  if (pipe (ostatniPipe) == -1) syserr("Error in pipe\n");
+if (pipe (pierwszyPipe) == -1) syserr("Error in pipe\n");
 
-  
+
+{  int poprz [2];
+	if (pipe (poprz) == -1) syserr("Error in pipe\n");
 switch (fork ()) {
     case -1: 
       syserr("Error in fork\n");
@@ -26,14 +27,14 @@ switch (fork ()) {
 	    
       
 	if (close (1) == -1)            syserr("child, close (0)");
-      if (dup(pipe_dsc3[1]) == -1) syserr("sdas");
-      if (close (pipe_dsc3 [0]) == -1) syserr("child, close (pipe_dsc [0])");
-      if (close (pipe_dsc3 [1]) == -1) syserr("child, close (pipe_dsc [1])");
+      if (dup(poprz[1]) == -1) syserr("sdas");
+      if (close (poprz [0]) == -1) syserr("child, close (pipe_dsc [0])");
+      if (close (poprz [1]) == -1) syserr("child, close (pipe_dsc [1])");
       
       if (close (0) == -1)            syserr("child, close (0)");
-      if (dup (pipe_dsc2 [0]) != 0)    syserr("child, dup (pipe_dsc [0])");
-      if (close (pipe_dsc2 [0]) == -1) syserr("child, close (pipe_dsc [0])");
-      if (close (pipe_dsc2 [1]) == -1) syserr("child, close (pipe_dsc [1])");
+      if (dup (pierwszyPipe [0]) != 0)    syserr("child, dup (pipe_dsc [0])");
+      if (close (pierwszyPipe [0]) == -1) syserr("child, close (pipe_dsc [0])");
+      if (close (pierwszyPipe [1]) == -1) syserr("child, close (pipe_dsc [1])");
       if (argc >= 2) {
         /* argv + 1 is equivalent to argv array without its first element, *
 	 * this element is the name of the program: "parent_dup"           */
@@ -51,14 +52,14 @@ switch (fork ()) {
 	    
       
 	if (close (1) == -1)            syserr("child, close (0)");
-      if (dup(pipe_dsc[1]) == -1) syserr("sdas");
-      if (close (pipe_dsc [0]) == -1) syserr("child, close (pipe_dsc [0])");
-      if (close (pipe_dsc [1]) == -1) syserr("child, close (pipe_dsc [1])");
+      if (dup(ostatniPipe[1]) == -1) syserr("sdas");
+      if (close (ostatniPipe [0]) == -1) syserr("child, close (pipe_dsc [0])");
+      if (close (ostatniPipe [1]) == -1) syserr("child, close (pipe_dsc [1])");
       
       if (close (0) == -1)            syserr("child, close (0)");
-      if (dup (pipe_dsc3 [0]) != 0)    syserr("child, dup (pipe_dsc [0])");
-      if (close (pipe_dsc3 [0]) == -1) syserr("child, close (pipe_dsc [0])");
-      if (close (pipe_dsc3 [1]) == -1) syserr("child, close (pipe_dsc [1])");
+      if (dup (poprz [0]) != 0)    syserr("child, dup (pipe_dsc [0])");
+      if (close (poprz [0]) == -1) syserr("child, close (pipe_dsc [0])");
+      if (close (poprz [1]) == -1) syserr("child, close (pipe_dsc [1])");
       if (argc >= 2) {
         /* argv + 1 is equivalent to argv array without its first element, *
 	 * this element is the name of the program: "parent_dup"           */
@@ -66,17 +67,17 @@ switch (fork ()) {
 	syserr ("child, execvp");
       }
       exit (0);
-
+  }
   }
 	  
       //if (close (pipe_dsc [0]) == -1) syserr("parent, close (pipe_dsc [0])");
 
-      if (close (pipe_dsc2 [0]) == -1) syserr("parent, close (pipe_dsc [0])");
+      if (close (pierwszyPipe [0]) == -1) syserr("parent, close (pipe_dsc [0])");
 	
-      if (write (pipe_dsc2 [1], message, sizeof(message) - 3) == -1)
+      if (write (pierwszyPipe [1], message, sizeof(message) - 3) == -1)
 	syserr("write");
 
-      if (close (pipe_dsc2 [1]) == -1) syserr("parent, close (pipe_dsc [1])");
+      if (close (pierwszyPipe [1]) == -1) syserr("parent, close (pipe_dsc [1])");
 
       
       
@@ -84,10 +85,10 @@ switch (fork ()) {
 	syserr("wait");
       if (wait (0) == -1) 
 	syserr("wait");
-      if (close (pipe_dsc [1]) == -1) syserr("parent, close (pipe_dsc [1])");
+      if (close (ostatniPipe [1]) == -1) syserr("parent, close (pipe_dsc [1])");
 	
       
-      if (read (pipe_dsc [0], message, sizeof(message) - 1) == -1)
+      if (read (ostatniPipe [0], message, sizeof(message) - 1) == -1)
 	syserr("read");
       int i = 0;
       for (i = 0; i < sizeof(message) && message[i] != '\n'; i++)
