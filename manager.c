@@ -5,7 +5,7 @@
 #include <sys/wait.h>
 #include "err.h"
 
-char wiadomosc[] = "Hello from your parent!\n";
+char wiadomosc[] = "2 7 + 3 -\n";
 
 unsigned int iloscWykonawcow = 0;
 void tworzPotomka(int deskryptorOdczytuOdOjca, int deskryptorZapisuSyna)//zwraca deskryptor do odczytu z ostatniego pipe
@@ -62,6 +62,10 @@ int main(int argc, char* argv[])
 			case 0:
 			{	
 				if (licznik == 0){
+					if (iloscWykonawcow == 1){
+						pipeTemp[0] = ostatniPipe[0];
+						pipeTemp[1] = ostatniPipe[1];
+					}
 					if (close (1) == -1)            syserr("child, close (0)");
 					if (dup (pipeTemp[1]) == -1)    syserr("child, dups (pipe_nast[1])");
 					if (close (pipeTemp[0]) == -1) syserr("child, close (pipe_nast[1])])");
@@ -74,7 +78,7 @@ int main(int argc, char* argv[])
 				}
 //TDO DLA DWOCH
 				else if (licznik == iloscWykonawcow - 1)
-				{
+					{
 					if (close (1) == -1)            syserr("child, close (0)");
 					if (dup (ostatniPipe[1]) == -1)    syserr("child, dups (pipe_nast[1])");
 					if (close (ostatniPipe[0]) == -1) syserr("child, close (pipe_nast[1])])");
@@ -114,15 +118,19 @@ int main(int argc, char* argv[])
  	
 	if (write (pierwszyPipe [1], wiadomosc, sizeof(wiadomosc) - 1) == -1)
  		syserr("write");
+	//if (write (pierwszyPipe [1], wiadomosc, sizeof(wiadomosc) - 1) == -1)
+ 	//	syserr("write");
+	
+	if (write (pierwszyPipe [1], "*", 1) == -1)
+ 		syserr("write");
 
 	if (close (pierwszyPipe [1]) == -1) syserr("parent, close (pipe_dsc [1])");
 
 	int j = 0;
 	
-	for ( j = 0; j < iloscWykonawcow; j++){
+	for ( j = 0; j < iloscWykonawcow; j	++){
 		if (wait (0) == -1) 
 			syserr("wait");}
-	
 	char wiadomosci[]= "aaaaaa";
 	 if (close (ostatniPipe [1]) == -1) syserr("parent, close (pipe_dsc [1])");
 	
@@ -133,7 +141,14 @@ int main(int argc, char* argv[])
 	
 	for (i = 0; i < sizeof(wiadomosc) && wiadomosc[i] != '\n'; i++)
 	printf("%c", wiadomosc[i]);
-     
+	
+// 	if (read (ostatniPipe [0], wiadomosc, sizeof(wiadomosc) - 1) == -1)
+// 		syserr("read");
+// 	
+// 	for (i = 0; i < sizeof(wiadomosc) && wiadomosc[i] != '\n'; i++)
+// 	printf("%c", wiadomosc[i]);
+//      
+	
 	
 	
 }
