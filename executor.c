@@ -8,27 +8,30 @@
 
 char operatory[] = "*+-/";
 int wyliczonaLiczba = 0;
+char bufor[BUF_SIZE];
+int indeksZnaku = 0;
+int indeksPierwszejLiczby = 0;
 
-int wykonajDzialanie(char a[], char* b[], char* operator[]){
+int wykonajDzialanie(char a[], char b[], char operator[]){
 	
 	long int i, j;
-	i = atol(*a);
-	j = atol(*b);
+	i = atol(a);
+	j = atol(b);
 	fprintf(stderr,"%li %li\n", i, j);
-	if (strcmp(*operator, "*") == 0){
+	if (strcmp(operator, "*") == 0){
 		return i*j;
 	}
-	if (strcmp(*operator, "/") == 0){
+	if (strcmp(operator, "/") == 0){
 		return i/j;
 	}
-	if (strcmp(*operator, "+") == 0){
+	if (strcmp(operator, "+") == 0){
 		return i+j;
 	}
 	return i-j;
 	
 }
 
-int znajdzIndeksZnaku(int dlugoscPoprzedniego){
+void znajdzIndeksZnaku(int dlugoscPoprzedniego){
 	char nic[] = "nic";
 	char liczba1[2], liczba2[2], liczba3[2];
 	strcpy(liczba1, nic);
@@ -37,9 +40,10 @@ int znajdzIndeksZnaku(int dlugoscPoprzedniego){
 	
 	int i;
 	bool warunekPetli = true;
+	int indeks = 0;
 	while (warunekPetli)
 	{
-		scanf("%s", liczba3);
+		sscanf(bufor + indeks, "%s", liczba3);
 		//printf("%s\n", liczba3);
 		i = strcspn(liczba3, operatory);
 		if (i < strlen(liczba3) && strlen(liczba3) < 2){
@@ -63,6 +67,7 @@ int znajdzIndeksZnaku(int dlugoscPoprzedniego){
 			}
 			warunekPetli = true;
 		}
+		indeks += 1 + strlen(liczba3);
 		
 	}
 	int j;
@@ -79,15 +84,15 @@ int znajdzIndeksZnaku(int dlugoscPoprzedniego){
 	}
 	else wyliczonaLiczba = i-j;
 	
-	//wyliczonaLiczba = wykonajDzialanie(liczba1, liczba2, liczba3);
-	long int pozycja = ftell(stdin);
-	return pozycja - strlen(liczba1) - strlen(liczba2) - strlen(liczba3) - 3;
+	indeksZnaku = indeks;
+	indeksPierwszejLiczby = indeks - strlen(liczba1) - strlen(liczba2) - strlen(liczba3) - 3;
+	
 	
 }
 
 int main (int argc, char *argv[])
 {	
-	rewind(stdin);
+	
 	
 	/*
 	char a[10];
@@ -109,21 +114,26 @@ int main (int argc, char *argv[])
 		scanf("%s", slowo);
 		printf("%s\n", slowo);
 	*/
-  
-	fprintf(stderr, "%i\n", getpid());
-	int pozycja = znajdzIndeksZnaku(0);
+	
+	fgets(bufor, sizeof(bufor), stdin);
+	znajdzIndeksZnaku(0);
+	int pozycja = 0;
 	char slowo[10];
 	int i = 0;
-	rewind(stdin);
-	while ( ftell(stdin) < pozycja){
-		scanf("%s", slowo);
-		printf("%s ", slowo);
-	}
-	printf("%i ", wyliczonaLiczba);
-	scanf("%s", slowo);
-	scanf("%s", slowo);
-	scanf("%s", slowo);
 	char litera = 'a';
+	while ( pozycja < indeksPierwszejLiczby){
+		litera = bufor[pozycja];	
+		printf("%c", litera);
+		pozycja++;
+	}
+	//printf("%s", bufor + (-2));
+	printf("%i", wyliczonaLiczba);
+	if (strlen(bufor) - 1 > indeksZnaku)
+		printf(" %s", bufor + indeksZnaku);
+	printf("\n");
+	/*scanf("%s", slowo);
+	scanf("%s", slowo);
+	scanf("%s", slowo);
 	
 	while(litera != '\n'){
 		scanf("%c", &litera);
@@ -132,7 +142,7 @@ int main (int argc, char *argv[])
 		else 
 			printf("%c", litera);
 	}
-	/*
+	*//*
 	pid_t pid = getpid();
 	fprintf(stderr, "%i", pid);
 	return 0;*/
