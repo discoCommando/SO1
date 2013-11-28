@@ -1,23 +1,10 @@
-all: manager executor
+all: kontroler.o sejf.o
 
+kontroler.o: kontroler.cc kontroler.h
+	g++ -Wall -std=c++11 -O2 kontroler.cc -o kontroler.o
 
-
-manager: manager.o err.o
-	gcc -Wall -o manager manager.o err.o
-
-executor: executor.o err.o
-	gcc -Wall -o executor executor.o err.o
-
-manager.o: manager.c err.h
-	gcc -Wall -c manager.c
-
-executor.o: executor.c err.h
-	gcc -Wall -c executor.c
-
-
-err.o: err.c err.h
-	gcc -Wall -c err.c
+sejf.o: sejf.cc sejf.h kontroler.h
+	g++ -Wall -std=c++11 -O2 sejf.cc -o sejf.o
 
 clean:
-	rm -f *.o manager executor
-
+	rm -f sejf.o kontroler.o
