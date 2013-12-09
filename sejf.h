@@ -14,9 +14,11 @@ const size_t max_liczba_dostepow = numeric_limits<size_t>().max();
 class Kontroler;
 class Sejf{
 public:
-Sejf(const string napis, const size_t dostepy = 42);
+Sejf(const string napis, const size_t dostepy);
 Sejf(const Sejf&);
+Sejf(Sejf&&);
 Sejf& operator=(const Sejf&);
+Sejf& operator=(Sejf&&);
 Sejf& operator+=(size_t modyfikator);
 Sejf& operator-=(size_t modyfikator);
 Sejf& operator*=(size_t modyfikator);

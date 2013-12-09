@@ -11,7 +11,7 @@
 
 using namespace std;
 
-Sejf::Sejf(const string napis, const size_t dostepy)
+Sejf::Sejf(const string napis, const size_t dostepy = 42)
 	: tajny_napis (napis)
 	, liczba_dostepow (dostepy)
 	, stan_sejfu (OK)
@@ -19,35 +19,79 @@ Sejf::Sejf(const string napis, const size_t dostepy)
 	{
 	}
 Sejf::Sejf(const Sejf&) = delete;
+Sejf::Sejf(Sejf&& s): tajny_napis ("temp")
+	, liczba_dostepow(0)
+	, stan_sejfu (OK)
+	, moj_kontroler(NULL, NULL)
+	
+	{
+		tajny_napis = s.tajny_napis;
+		stan_sejfu = s.stan_sejfu;
+		liczba_dostepow = s.liczba_dostepow;
+		moj_kontroler = s.moj_kontroler;
+		
+		s.tajny_napis = "";
+		s.stan_sejfu = OK;
+		s.liczba_dostepow = 0;
+		
+	}
 Sejf& Sejf::operator=(const Sejf&) = delete;
+Sejf& Sejf::operator=(Sejf&& s)
+	{
+		if (this != &s)
+		{
+			tajny_napis = s.tajny_napis;
+			stan_sejfu = s.stan_sejfu;
+			liczba_dostepow = s.liczba_dostepow;
+			moj_kontroler = s.moj_kontroler;
+		
+			s.tajny_napis = "";
+			s.stan_sejfu = OK;
+			s.liczba_dostepow = 0;
+		}
+		return *this;
+	}
+
 Sejf& Sejf::operator+=(size_t modyfikator)
 	{
-	if(modyfikator<=max_liczba_dostepow-liczba_dostepow)
+	if((modyfikator<=max_liczba_dostepow-liczba_dostepow) &&
+		(modyfikator >= 0)){
 		liczba_dostepow += modyfikator;
 	if(stan_sejfu != WLAMANIE)
-		stan_sejfu = MANIPULACJA;
+		stan_sejfu = MANIPULACJA;}
 	return *this;
 	}
 Sejf& Sejf::operator-=(size_t modyfikator)
 	{
-	if(liczba_dostepow >= modyfikator)
-		this -> liczba_dostepow -= modyfikator;
+	if((liczba_dostepow >= modyfikator) &&
+		(modyfikator >= 0)){
+		liczba_dostepow -= modyfikator;
 	if(stan_sejfu != WLAMANIE)
-		stan_sejfu = MANIPULACJA;
+		stan_sejfu = MANIPULACJA;}
 	return *this;
 	}
 Sejf& Sejf::operator*=(size_t modyfikator)
 	{
-	if((modyfikator<=(max_liczba_dostepow%liczba_dostepow)) && (liczba_dostepow<=(max_liczba_dostepow%modyfikator)))
-		liczba_dostepow *= modyfikator;
-	if(stan_sejfu != WLAMANIE)
-		stan_sejfu = MANIPULACJA;
+	
+	if ((modyfikator != 0) && (liczba_dostepow != 0)){
+		if((modyfikator<=(max_liczba_dostepow/liczba_dostepow)) 
+			&& (liczba_dostepow<=(max_liczba_dostepow/modyfikator))
+			&& (modyfikator > 0))
+		{	liczba_dostepow *= modyfikator;
+		
+		
+		if(stan_sejfu != WLAMANIE)
+			stan_sejfu = MANIPULACJA;}
+	}	
+	if((modyfikator == size_t(0)) && (liczba_dostepow == size_t(0))){
+		if(stan_sejfu != WLAMANIE)
+			stan_sejfu = MANIPULACJA;}
 	return *this;
 	}
 int16_t Sejf::operator[](rozmiar_napisu numer_skrytki)
 	{
 	int16_t zawartosc_skrytki = -1;
-	if(numer_skrytki <= tajny_napis.size())
+	if(numer_skrytki < tajny_napis.size())
 		{
 		if(liczba_dostepow>0)
 			{
@@ -72,7 +116,6 @@ Kontroler const& Sejf::kontroler() const
 Sejf::~Sejf()
 	{
 	}
-
 void pobierz(Sejf &se, const string &s, bool uda_sie = true) {
     size_t sz = s.length();
     size_t pos = rand() % sz;
@@ -113,7 +156,7 @@ void testy_liczb() {
     testuj_liczbe(10000);
     testuj_liczbe(1000000);
 
-//    testuj_liczbe(-1); // Ciekawe, co tutaj się dzieje?
+//    testuj_liczbe(-1); // Ciekawe, co tutaj siÄ dzieje?
 //    testuj_liczbe(-2000000022); // A tutaj?
 }
 
@@ -159,21 +202,21 @@ void testuj_operatory_zdradliwe(const string &s = "ryboplazokon") {
     se *= -1;
     assert(se.kontroler());
 
-    // Zakładam, że wtedy nic się nie dzieje (bo byłby overflow)
-    // Ale chyba to nie jest jedyne sensowne założenie
-    // W każdym razie jest przynajmniej jasność co do zmniejszania o zbyt dużo
+    // ZakĹadam, Ĺźe wtedy nic siÄ nie dzieje (bo byĹby overflow)
+    // Ale chyba to nie jest jedyne sensowne zaĹoĹźenie
+    // W kaĹźdym razie jest przynajmniej jasnoĹÄ co do zmniejszania o zbyt duĹźo
     //
-    /* Czy po wykonaniu operacji -= mamy zmniejszyć ilość dostępów o tyle o 
-     * ile jest możliwe póki nie dojdziemy do 0 czy jeśli dostajemy rozkaz 
-     * zmniejszenia o więcej niż możemy to nic nie robimy?
+    /* Czy po wykonaniu operacji -= mamy zmniejszyÄ iloĹÄ dostÄpĂłw o tyle o 
+     * ile jest moĹźliwe pĂłki nie dojdziemy do 0 czy jeĹli dostajemy rozkaz 
+     * zmniejszenia o wiÄcej niĹź moĹźemy to nic nie robimy?
      
-    Przejdź do wiadomości wyżej („parent”) | Odpowiedz
+    PrzejdĹş do wiadomoĹci wyĹźej (âparentâ) | Odpowiedz
     Obraz Maciej Zielenkiewicz
     Odp: Zadanie 3
-    Maciej Zielenkiewicz w dniu Thursday, 7 November 2013, 15:32 napisał(a)
+    Maciej Zielenkiewicz w dniu Thursday, 7 November 2013, 15:32 napisaĹ(a)
      
 
-    Jeżeli nie jest możliwe zmniejszenie liczby dostępów o żądaną wartość to nic nie robimy.
+    JeĹźeli nie jest moĹźliwe zmniejszenie liczby dostÄpĂłw o ĹźÄdanÄ wartoĹÄ to nic nie robimy.
 */
     for(int i = 0; i < 10; i++) pobierz(se, s);
     assert(!se.kontroler());
@@ -330,7 +373,7 @@ void testy_z_forum() {
     ss2 << k1 << k2 << k3;
     assert(ss1.str() == ss2.str());
     ss1.str(""), ss2.str("");
-//  Przemysław Gumienny w dniu Tuesday, 5 November 2013, 20:48 napisał(a) 
+//  PrzemysĹaw Gumienny w dniu Tuesday, 5 November 2013, 20:48 napisaĹ(a) 
     s1 += 0; 
     s2 -= 0; 
     s3 *= 1;
@@ -341,7 +384,7 @@ void testy_z_forum() {
 
     assert(ss1.str() == ss2.str());
 
-// Tomasz Stęczniewski w dniu Wednesday, 6 November 2013, 15:26 napisał(a) 
+// Tomasz StÄczniewski w dniu Wednesday, 6 November 2013, 15:26 napisaĹ(a) 
     {
     Sejf s1("aaa", 1), s2("bbb", 0);
 
@@ -352,7 +395,7 @@ void testy_z_forum() {
     }
     /*
 On 2013-11-10 00:31, Maciej Szeszko wrote:
-> Zamieszczam przykład. Proszę o wskazanie prawdiłowego out'a
+> Zamieszczam przykĹad. ProszÄ o wskazanie prawdiĹowego out'a
 >*/
 
     {
@@ -385,7 +428,7 @@ On 2013-11-10 00:31, Maciej Szeszko wrote:
  assert(ss.str() == "ALARM: WLAMANIE\n");
     }
 
-        // Dawid Łazarczyk w dniu Sunday, 10 November 2013, 10:57 napisał(a)
+        // Dawid Ĺazarczyk w dniu Sunday, 10 November 2013, 10:57 napisaĹ(a)
     {
     stringstream ss;
     Sejf a("A", 1), b("B", 1);
@@ -405,7 +448,7 @@ On 2013-11-10 00:31, Maciej Szeszko wrote:
     assert(c.kontroler());
     }
 
-// Hubert Tarasiuk w dniu Saturday, 16 November 2013, 21:43 napisał(a)
+// Hubert Tarasiuk w dniu Saturday, 16 November 2013, 21:43 napisaĹ(a)
   {
     string str = "superokonioszcurowydra";
     Sejf s1(str, 41);
@@ -415,7 +458,7 @@ On 2013-11-10 00:31, Maciej Szeszko wrote:
   }
 
   {
-      // Jacek Koziński w dniu Sunday, 17 November 2013, 00:16 napisał(a)
+      // Jacek KoziĹski w dniu Sunday, 17 November 2013, 00:16 napisaĹ(a)
      string s = "kot";
      Sejf s1("pies"), s2(s); 
      Sejf s3 = std::move(s1); 
@@ -427,7 +470,7 @@ On 2013-11-10 00:31, Maciej Szeszko wrote:
 
 }
 
-const long long ILE = UINT_MAX; // Zmien na tyle, ile maksymalnie odczytow dopuszczasz
+const long long ILE = max_liczba_dostepow; // Zmien na tyle, ile maksymalnie odczytow dopuszczasz
 
 void testy_kontrowersyjne() {
   cout << "Testy kontrowersyjne" << endl;
@@ -507,6 +550,29 @@ string daj_stringa() {
     string str("abc");
     return str;
 }
+
+void testy_constow() {
+    const Sejf s1("aa", 1);
+//    Sejf s2 = daj_const_sejfa(); //FIXME 
+//    (to dziala, jesli ma sie konstruktor przenoszacy Sejf(const && Sejf)
+//    ale z dyskusji na FB bylo wiecej glosow, zeby tak nie robic */
+//    const Sejf s3 = daj_const_sejfa(); //FIXME
+    Sejf s4 = daj_sejfa();
+    const Sejf s5 = daj_sejfa();
+//    Sejf s6 = s1; // FIXME
+//    const Sejf s7 = s1; // FIXME
+//    Sejf s8 = s2; // FIXME
+//    const Sejf s9 = s2; // FIXME
+    Sejf x1(daj_stringa(), 1); 
+    Sejf x2(daj_const_stringa(), 1); 
+    const Sejf y1("y1", 1);
+    const Sejf y2("y2", 2);
+    //swap(y1, y2);  // FIXME
+    auto k1 = y1.kontroler();
+    stringstream ss;
+    ss << k1;
+}
+
 int main() {
     srand(1233321);
     testy_liczb();
@@ -519,10 +585,10 @@ int main() {
     testy_z_tresci();
     testy_konstruktorow();
 
-    testy_dzikie_z_palca();
+   // testy_dzikie_z_palca();
     testy_z_forum();
     testy_kontrowersyjne();
-    //testy_constow();
+    testy_constow();
 
     cout << "Twoj program dziala tak samo jak moj :P" << endl;
     cout << "Ciekawe, czy cos z tego wynika" << endl;
